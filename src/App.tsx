@@ -563,7 +563,7 @@ export default function App() {
   const [mqttStatus, setMqttStatus] = useState<"disconnected" | "connecting" | "connected">("disconnected");
   const [mqttClient, setMqttClient] = useState<mqtt.MqttClient | null>(null);
   
-  const MQTT_SERVER_DOMAIN = "tour.nestormao.com";
+  const MQTT_SERVER_DOMAIN = "mqtt.nestormao.com";
 
   // Mock waypoints coordinates for the map
   const waypoints = [
@@ -740,7 +740,7 @@ export default function App() {
               )}
             </div>
             {mqttStatus === "connected" && (
-              <p className="text-xs text-[#7ab87a] mt-2">已成功加密连接至服务器 (tour.nestormao.com)，等待接收车辆坐标...</p>
+              <p className="text-xs text-[#7ab87a] mt-2">已成功加密连接至服务器 (mqtt.nestormao.com)，等待接收车辆坐标...</p>
             )}
           </div>
           
