@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type DayTag = "landmark" | "rest" | "finish" | "transit";
 
@@ -16,6 +16,8 @@ interface DayData {
   highlights: string[];
   hotel: string;
   hotelStrategy: string;
+  hotelLat?: number;
+  hotelLng?: number;
   tag: DayTag;
   photo?: string;
   photoAlt?: string;
@@ -50,25 +52,29 @@ const DAYS: DayData[] = [
       "重点检查减震是否漏油、风挡及漆水是否破损",
       "试车、就近加满第一箱油",
     ],
-    hotel: "西宁物流园附近 / 城东区机车友好酒店",
-    hotelStrategy: "尽量选带有独立封闭院落或地下车库（且允许摩托下库）的快捷/星级酒店。国内很多智选假日、全季在西宁的分店都有较好的停车条件。部分机车主题客栈还会提供免费的高压水枪供车友洗车。",
+    hotel: "西宁海湖新区国投广场亚朵 S酒店",
+    hotelStrategy: "距离交车点较近，亚朵的停车条件和设施保障对于长途出发前的休整非常理想。",
+    hotelLat: 36.638,
+    hotelLng: 101.724,
     tag: "transit",
   },
   {
     day: 2,
     date: "9月26日",
     dateEn: "Sep 26",
-    route: "西宁 → 青海湖 → 黑马河",
-    routeEn: "Xining  →  Qinghai Lake  →  Heimahe",
+    route: "西宁 → 青海湖 → 共和",
+    routeEn: "Xining  →  Qinghai Lake  →  Gonghe",
     km: 220,
-    time: "18:30 黑马河看日落",
+    time: "18:30 青海湖南岸",
     highlights: [
       "翻越日月山口，正式进入高原地带",
       "绕湖西行，感受 4,000m 湖光山色",
-      "黑马河镇观赏青海湖绝美日落",
+      "抵达湖景酒店观赏青海湖绝美日落",
     ],
-    hotel: "黑马河镇 / 共和县沿湖客栈",
-    hotelStrategy: "强烈建议在小红书或携程上筛选带「私人院子」的客栈，摩托车直接停在院内，防盗且方便搬卸沉重的边包和骑行服。注意：湖边夜间极冷，务必确认房间有充足的暖气或地暖。",
+    hotel: "晟世璞臻大酒店（豪华湖景大床房）",
+    hotelStrategy: "豪华湖景大床房，直面青海湖，风景绝佳，且停车安全。",
+    hotelLat: 36.275,
+    hotelLng: 100.624,
     tag: "landmark",
     photo: "https://images.unsplash.com/photo-1775391715242-ade010710509?w=1200&h=420&fit=crop&auto=format",
     photoAlt: "Calm blue Qinghai Lake with rolling green hills under a cloudy sky",
@@ -77,8 +83,8 @@ const DAYS: DayData[] = [
     day: 3,
     date: "9月27日",
     dateEn: "Sep 27",
-    route: "黑马河 → 茶卡盐湖 → 德令哈",
-    routeEn: "Heimahe  →  Chaka Salt Lake  →  Delingha",
+    route: "青海湖 → 茶卡盐湖 → 德令哈",
+    routeEn: "Qinghai Lake  →  Chaka Salt Lake  →  Delingha",
     km: 300,
     time: "17:00 抵达德令哈",
     highlights: [
@@ -86,8 +92,10 @@ const DAYS: DayData[] = [
       "穿越乌兰县，向柴达木盆地深处推进",
       "德令哈市区重要物资补给",
     ],
-    hotel: "德令哈市区星级酒店",
-    hotelStrategy: "德令哈是重要的物资补给站，物价合理。推荐选择当地的四星/五星标准酒店，通常拥有面积巨大的地面监控停车场，保安巡逻勤务密集，对摩托车非常友好。",
+    hotel: "桔子酒店（德令哈市政府店）",
+    hotelStrategy: "位于德令哈核心区，连锁酒店管理规范，停车方便，适合做长途穿越前的大补给休整。",
+    hotelLat: 37.373,
+    hotelLng: 97.365,
     tag: "landmark",
   },
   {
@@ -104,8 +112,10 @@ const DAYS: DayData[] = [
       "水上雅丹地质奇观，鬼斧神工",
       "穿越柴达木无人区，壮阔戈壁无尽头",
     ],
-    hotel: "大柴旦镇 汽车旅馆 / 精品民宿",
-    hotelStrategy: "大柴旦镇不大，旺季住宿紧张。优先选择一楼能直接停车的汽车旅馆（Motel）式布局。重机车一天骑行 450km 后体力消耗极大，能把车直接停在房间窗户外面或一楼门口，绝对是救命的加分项。",
+    hotel: "桔子富氧酒店（大柴旦翡翠步行街店）",
+    hotelStrategy: "大柴旦旺季住宿紧张，桔子富氧酒店提供弥散式供氧（高海拔地区神器），而且位于翡翠步行街，吃饭极为方便。",
+    hotelLat: 37.852,
+    hotelLng: 95.364,
     tag: "landmark",
   },
   {
@@ -121,8 +131,10 @@ const DAYS: DayData[] = [
       "翻越当金山口（海拔 3,700m），俯瞰戈壁",
       "进入河西走廊，千年古道抵达敦煌",
     ],
-    hotel: "敦煌沙洲夜市周边（带内院酒店）",
-    hotelStrategy: "推荐如「嘉河云境酒店」、「阳光·城市舒眠PLUS酒店」或同级拥有内部专属停车场的酒店。距离沙洲夜市步行距离即可，晚上喝了酒直接溜达回酒店，无需挪车。",
+    hotel: "敦煌沙州夜市北门亚朵酒店",
+    hotelStrategy: "位置极佳，就在沙州夜市北门，晚上走路即可去夜市吃烤肉喝酒，无需挪动重机车。",
+    hotelLat: 40.145,
+    hotelLng: 94.662,
     tag: "landmark",
     photo: "https://images.unsplash.com/photo-1641959166337-5da726834b1e?w=1200&h=420&fit=crop&auto=format",
     photoAlt: "The sun setting over golden sand dunes near Dunhuang",
@@ -139,8 +151,10 @@ const DAYS: DayData[] = [
       "鸣沙山月牙泉，骑骆驼看沙丘",
       "连住两晚，省去每天收拾边包的苦楚",
     ],
-    hotel: "同 Day 5（连住两晚）",
+    hotel: "敦煌沙州夜市北门亚朵酒店（连住两晚）",
     hotelStrategy: "连住可省去每天重新收拾边包的繁琐，把精力全部留给景点游览。",
+    hotelLat: 40.145,
+    hotelLng: 94.662,
     tag: "rest",
   },
   {
@@ -156,8 +170,10 @@ const DAYS: DayData[] = [
       "抵达天下第一雄关——嘉峪关关城",
       "万里长城西端起点，夕阳染红边墙",
     ],
-    hotel: "嘉峪关关城附近 / 市区中高档酒店",
-    hotelStrategy: "嘉峪关作为地级市，城市基建极好。推荐选择大型商务酒店，通常配备完善的地下车库，彻底杜绝国庆期间路面人流复杂带来的刮蹭风险。",
+    hotel: "全季酒店（嘉峪关大唐美食街市政府店）",
+    hotelStrategy: "连锁商务酒店，地下车库完善，紧邻大唐美食街，国庆期间路况复杂时可以步行觅食。",
+    hotelLat: 39.773,
+    hotelLng: 98.285,
     tag: "landmark",
   },
   {
@@ -173,8 +189,10 @@ const DAYS: DayData[] = [
       "午后光线最佳，色彩饱和度极高",
       "多处观景台逐一打卡，拍摄黄金时段",
     ],
-    hotel: "张掖七彩丹霞景区北门 / 张掖西站周边",
-    hotelStrategy: "如果想第二天不用早起赶路，可以直接住在丹霞七彩镇景区北门外的民宿小镇，这里的客栈几乎家家户户都有大院子，机车停放无忧。",
+    hotel: "张掖西站爱琴海购物中心亚朵酒店",
+    hotelStrategy: "市区高标准连锁酒店，距离张掖西站较近，商圈配套成熟。",
+    hotelLat: 38.932,
+    hotelLng: 100.415,
     tag: "landmark",
     photo: "https://images.unsplash.com/photo-1785122713227-a1617ef1f43e?w=1200&h=420&fit=crop&auto=format",
     photoAlt: "Colorful striped red and orange mountains of Zhangye Danxia National Geopark",
@@ -192,8 +210,10 @@ const DAYS: DayData[] = [
       "祁连山国家公园草甸，群马牧歌",
       "卓尔山景区，俯瞰祁连全景，雪山环抱",
     ],
-    hotel: "祁连县 卓尔山脚下景观民宿",
-    hotelStrategy: "推荐住在卓尔山脚下的景观民宿或青年旅舍，窗外就是雪山。山脚下停车空间充裕，部分民宿老板本身也是摩友，会提供非常好的接待服务。",
+    hotel: "祁连宾馆",
+    hotelStrategy: "祁连县城的经典老牌宾馆，拥有内部大院停车场，是当地接待规格极高的住宿点。",
+    hotelLat: 38.175,
+    hotelLng: 100.248,
     tag: "landmark",
     photo: "https://images.unsplash.com/photo-1780928108815-d53daefefa43?w=1200&h=420&fit=crop&auto=format",
     photoAlt: "Green valley with snow-capped Qilian mountains under a dramatic cloudy sky",
@@ -211,8 +231,10 @@ const DAYS: DayData[] = [
       "翻越达坂山（海拔 3,792m），全程最高公路垭口",
       "18:00 抵达西宁，青甘大环线完美闭合",
     ],
-    hotel: "西宁市 离托运网点较近的酒店",
-    hotelStrategy: "提前查好托运网点的位置，选择附近的住宿，为明天的交车做准备。",
+    hotel: "西宁海湖新区国投广场亚朵 S酒店",
+    hotelStrategy: "行程最后一天回到原点，入住熟悉的亚朵酒店，舒舒服服洗个热水澡，为明天的交车托运做准备。",
+    hotelLat: 36.638,
+    hotelLng: 101.724,
     tag: "finish",
   },
   {
@@ -274,7 +296,7 @@ const ROUTE_WAYPOINTS = [
   "嘉峪关", "七彩丹霞", "祁连山", "门源", "西宁",
 ];
 
-function DayCard({ data }: { data: DayData }) {
+function DayCard({ data, onLocate }: { data: DayData, onLocate: (lat: number, lng: number) => void }) {
   const [hotelOpen, setHotelOpen] = useState(false);
   const borderColor = TAG_COLOR[data.tag];
   const tagLabel = TAG_LABEL[data.tag];
@@ -284,7 +306,8 @@ function DayCard({ data }: { data: DayData }) {
       className="relative overflow-hidden"
       style={{
         borderLeft: `3px solid ${borderColor}`,
-        backgroundColor: "#141210",
+        backgroundColor: "rgba(20, 18, 16, 0.6)",
+        backdropFilter: "blur(8px)",
       }}
     >
       {/* Ghost day number */}
@@ -308,12 +331,12 @@ function DayCard({ data }: { data: DayData }) {
             <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 mb-2">
               <span
                 className="font-mono text-[11px] tracking-[0.18em] uppercase"
-                style={{ color: "#5a5048" }}
+                style={{ color: "#7a7068" }}
               >
                 Day {String(data.day).padStart(2, "0")}
               </span>
               <span style={{ color: "#2a2520" }}>·</span>
-              <span className="font-mono text-[11px]" style={{ color: "#5a5048" }}>
+              <span className="font-mono text-[11px]" style={{ color: "#7a7068" }}>
                 {data.dateEn}
               </span>
               {tagLabel && (
@@ -338,14 +361,14 @@ function DayCard({ data }: { data: DayData }) {
             </h2>
             <p
               className="text-[13px] mt-1 tracking-wide"
-              style={{ color: "#5a5048", fontFamily: "var(--font-sans)" }}
+              style={{ color: "#7a7068", fontFamily: "var(--font-sans)" }}
             >
               {data.routeEn}
             </p>
             {data.subtitle && (
               <p
                 className="text-sm mt-1.5 font-medium"
-                style={{ color: "#7a6f62", fontFamily: "var(--font-sans)" }}
+                style={{ color: "#9a8f82", fontFamily: "var(--font-sans)" }}
               >
                 {data.subtitle}
               </p>
@@ -370,7 +393,7 @@ function DayCard({ data }: { data: DayData }) {
                 </div>
                 <div
                   className="font-mono text-[10px] tracking-[0.2em] uppercase mt-1"
-                  style={{ color: "#5a5048" }}
+                  style={{ color: "#7a7068" }}
                 >
                   km
                 </div>
@@ -386,7 +409,7 @@ function DayCard({ data }: { data: DayData }) {
             ) : (
               <div
                 className="font-mono font-light leading-none"
-                style={{ fontSize: "28px", color: "#2a2520" }}
+                style={{ fontSize: "28px", color: "#4a4540" }}
               >
                 — km
               </div>
@@ -403,7 +426,7 @@ function DayCard({ data }: { data: DayData }) {
             />
             <span
               className="font-mono text-[11px] tracking-wide"
-              style={{ color: "#7a7060" }}
+              style={{ color: "#9a9080" }}
             >
               {data.time}
             </span>
@@ -413,7 +436,7 @@ function DayCard({ data }: { data: DayData }) {
         {/* Photo strip */}
         {data.photo && (
           <div
-            className="mb-5 overflow-hidden"
+            className="mb-5 overflow-hidden rounded-sm"
             style={{ margin: "0 -20px 20px", backgroundColor: "#0a0908" }}
           >
             <img
@@ -439,7 +462,7 @@ function DayCard({ data }: { data: DayData }) {
             <li
               key={i}
               className="flex items-start gap-3 text-sm leading-snug"
-              style={{ color: "#b0a090", fontFamily: "var(--font-sans)" }}
+              style={{ color: "#d0c0b0", fontFamily: "var(--font-sans)" }}
             >
               <span
                 className="mt-[6px] shrink-0 rounded-full"
@@ -459,7 +482,7 @@ function DayCard({ data }: { data: DayData }) {
         {data.hotel && data.hotel !== "——" && (
           <div
             className="pt-4"
-            style={{ borderTop: "1px solid #1e1c18" }}
+            style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
           >
             <button
               onClick={() => setHotelOpen((o) => !o)}
@@ -477,19 +500,30 @@ function DayCard({ data }: { data: DayData }) {
                 >
                   住宿
                 </div>
-                <div>
+                <div className="flex-1">
                   <div
-                    className="text-sm font-medium leading-snug"
-                    style={{ color: "#8a7f72", fontFamily: "var(--font-sans)" }}
+                    className="text-sm font-medium leading-snug flex items-center flex-wrap gap-2"
+                    style={{ color: "#b0a090", fontFamily: "var(--font-sans)" }}
                   >
                     {data.hotel}
+                    {data.hotelLat && data.hotelLng && (
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onLocate(data.hotelLat!, data.hotelLng!);
+                        }}
+                        className="inline-flex bg-[#4a9fa5] text-[#0e0d0b] px-2 py-0.5 rounded text-[10px] font-bold hover:bg-[#3d8388] transition-colors whitespace-nowrap cursor-pointer shadow-lg"
+                      >
+                        一键定位地图
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
               <span
                 className="shrink-0 font-mono text-xs mt-0.5"
                 style={{
-                  color: "#4a5048",
+                  color: "#6a7068",
                   transform: hotelOpen ? "rotate(180deg)" : "none",
                   transition: "transform 0.2s ease",
                   display: "inline-block",
@@ -514,210 +548,268 @@ function DayCard({ data }: { data: DayData }) {
   );
 }
 
+import MapContainer from "./components/MapContainer";
+import Uploader from "./components/Uploader";
+import { Play } from "lucide-react";
+
+import mqtt from "mqtt";
+
 export default function App() {
+  const [track, setTrack] = useState<[number, number][]>([]);
+  const [currentLocation, setCurrentLocation] = useState<[number, number] | undefined>(undefined);
+  const [isSimulating, setIsSimulating] = useState(false);
+  
+  // MQTT State
+  const [mqttStatus, setMqttStatus] = useState<"disconnected" | "connecting" | "connected">("disconnected");
+  const [mqttClient, setMqttClient] = useState<mqtt.MqttClient | null>(null);
+  
+  const MQTT_SERVER_IP = "47.100.188.4";
+
+  // Mock waypoints coordinates for the map
+  const waypoints = [
+    { title: "西宁", subtitle: "起点/终点", lat: 36.6171, lng: 101.7782 },
+    { title: "青海湖", lat: 36.75, lng: 100.25 },
+    { title: "黑马河", lat: 36.72, lng: 99.78 },
+    { title: "茶卡盐湖", lat: 36.78, lng: 99.08 },
+    { title: "德令哈", lat: 37.37, lng: 97.37 },
+    { title: "大柴旦", lat: 37.85, lng: 95.36 },
+    { title: "水上雅丹", lat: 37.5, lng: 92.5 },
+    { title: "翡翠湖", lat: 37.75, lng: 95.5 },
+    { title: "敦煌", subtitle: "莫高窟、鸣沙山", lat: 40.14, lng: 94.66 },
+    { title: "嘉峪关", subtitle: "天下第一雄关", lat: 39.77, lng: 98.28 },
+    { title: "张掖", subtitle: "七彩丹霞", lat: 38.93, lng: 100.45 },
+    { title: "祁连", subtitle: "卓尔山", lat: 38.17, lng: 100.25 },
+    { title: "门源", subtitle: "达坂山", lat: 37.38, lng: 101.62 },
+  ];
+
+  // Simulation logic
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isSimulating && track.length > 0) {
+      let index = 0;
+      interval = setInterval(() => {
+        if (index < track.length) {
+          setCurrentLocation(track[index]);
+          // Move 5 points at a time for speed in simulation
+          index += Math.max(1, Math.floor(track.length / 500)); 
+        } else {
+          setIsSimulating(false);
+          clearInterval(interval);
+        }
+      }, 50);
+    }
+    return () => clearInterval(interval);
+  }, [isSimulating, track]);
+
+  const startSimulation = () => {
+    if (track.length === 0) {
+      alert("请先上传 GPX 轨迹文件，再开启实时位置模拟。");
+      return;
+    }
+    setIsSimulating(true);
+  };
+
+  const connectMqtt = () => {
+    setMqttStatus("connecting");
+    // Connect via WebSocket (port 9001)
+    const client = mqtt.connect(`ws://${MQTT_SERVER_IP}:9001`, {
+      username: "Nestor", 
+      password: "3545941mhk",
+    });
+
+    client.on("connect", () => {
+      setMqttStatus("connected");
+      // Subscribe to all owntracks topics
+      client.subscribe("owntracks/+/+");
+    });
+
+    client.on("message", (topic, message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        if (data._type === "location" && data.lat && data.lon) {
+          setCurrentLocation([data.lat, data.lon]);
+        }
+      } catch (err) {
+        console.error("Failed to parse MQTT message", err);
+      }
+    });
+
+    client.on("error", (err) => {
+      console.error("MQTT Error:", err);
+      setMqttStatus("disconnected");
+      alert(`无法连接至 ${MQTT_SERVER_IP}:9001。请检查端口是否放行，或者密码是否正确！`);
+      client.end();
+    });
+
+    setMqttClient(client);
+  };
+
+  const disconnectMqtt = () => {
+    if (mqttClient) {
+      mqttClient.end();
+      setMqttClient(null);
+    }
+    setMqttStatus("disconnected");
+  };
+
   return (
     <div
-      className="min-h-full"
+      className="relative w-full h-screen overflow-hidden"
       style={{
         backgroundColor: "#0e0d0b",
         color: "#f0e8d8",
         fontFamily: "var(--font-sans)",
       }}
     >
-      {/* ── Hero ── */}
-      <header className="relative overflow-hidden" style={{ minHeight: "clamp(320px, 55vh, 460px)" }}>
-        <img
-          src="https://images.unsplash.com/photo-1751886797630-f1107c2cd1b8?w=1800&h=700&fit=crop&auto=format"
-          alt="Motorcycles riding on a winding mountain highway"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: "center 40%" }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to bottom, rgba(14,13,11,0.25) 0%, rgba(14,13,11,0.55) 40%, rgba(14,13,11,0.92) 75%, rgba(14,13,11,1) 100%)",
-          }}
-        />
-
-        <div
-          className="relative z-10 max-w-4xl mx-auto px-5 md:px-12 flex flex-col justify-end"
-          style={{ minHeight: "clamp(320px, 55vh, 460px)", paddingBottom: "clamp(24px, 5vh, 48px)" }}
-        >
-          {/* Eyebrow */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-4">
-            <span
-              className="font-mono text-[11px] tracking-[0.22em] uppercase"
-              style={{ color: "#c8963e" }}
-            >
-              Moto Cruiser
-            </span>
-            <span style={{ color: "#3a3530" }}>·</span>
-            <span
-              className="font-mono text-[11px] tracking-[0.18em] uppercase"
-              style={{ color: "#5a5048" }}
-            >
-              Sep 25 – Oct 7, 2026
-            </span>
-            <span style={{ color: "#3a3530" }}>·</span>
-            <span
-              className="font-mono text-[11px] tracking-[0.18em] uppercase"
-              style={{ color: "#5a5048" }}
-            >
-              顺时针大环线
-            </span>
-          </div>
-
-          {/* Title */}
-          <h1
-            className="font-bold leading-[0.9] mb-2"
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "clamp(40px, 11vw, 88px)",
-              color: "#f0e8d8",
-            }}
-          >
-            青甘大环线
-          </h1>
-          <p
-            className="font-light mb-6"
-            style={{
-              fontFamily: "var(--font-display)",
-              fontStyle: "italic",
-              fontSize: "clamp(15px, 4vw, 26px)",
-              color: "#b8a880",
-            }}
-          >
-            Qinghai-Gansu Grand Loop
-          </p>
-
-          {/* Stats strip — 3-col grid on mobile, flex row on sm+ */}
-          <div className="grid grid-cols-3 gap-x-5 gap-y-4 sm:flex sm:flex-wrap sm:gap-x-8 sm:gap-y-4">
-            {[
-              { val: "13", label: "DAYS" },
-              { val: "2,470+", label: "KM TOTAL" },
-              { val: "10", label: "RIDING" },
-              { val: "450", label: "MAX DAY" },
-              { val: "3,792m", label: "TOP PASS" },
-            ].map((s) => (
-              <div key={s.label}>
-                <div
-                  className="font-mono font-medium leading-none"
-                  style={{
-                    fontSize: "clamp(19px, 5vw, 34px)",
-                    color: "#c8963e",
-                  }}
-                >
-                  {s.val}
-                </div>
-                <div
-                  className="font-mono tracking-[0.16em] uppercase mt-1"
-                  style={{ fontSize: "9px", color: "#5a5048" }}
-                >
-                  {s.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </header>
-
-      {/* ── Waypoint strip ── */}
-      <div
-        className="overflow-x-auto"
-        style={{ borderTop: "1px solid #1e1c18", borderBottom: "1px solid #1e1c18", backgroundColor: "#100f0d" }}
+      {/* ── Left Sidebar (Timeline) ── */}
+      <div 
+        className="absolute top-0 left-0 w-full md:w-[420px] lg:w-[460px] h-[50vh] md:h-screen overflow-y-auto custom-scrollbar flex flex-col z-10 shadow-[20px_0_40px_rgba(0,0,0,0.5)]"
+        style={{
+          backgroundColor: "rgba(14, 13, 11, 0.75)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          borderRight: "1px solid rgba(255, 255, 255, 0.05)"
+        }}
       >
-        <div className="max-w-4xl mx-auto px-5 md:px-12 py-2.5">
+        {/* Hero */}
+        <header className="relative shrink-0 overflow-hidden" style={{ minHeight: "320px" }}>
+          <img
+            src="https://images.unsplash.com/photo-1751886797630-f1107c2cd1b8?w=1800&h=700&fit=crop&auto=format"
+            alt="Motorcycles riding on a winding mountain highway"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: "center 40%" }}
+          />
           <div
-            className="flex items-center gap-1.5 whitespace-nowrap font-mono"
-            style={{ fontSize: "11px" }}
-          >
-            {ROUTE_WAYPOINTS.map((place, i) => (
-              <span key={i} className="flex items-center gap-1.5">
-                <span
-                  style={{
-                    color:
-                      i === 0 || i === ROUTE_WAYPOINTS.length - 1
-                        ? "#c8963e"
-                        : "#5a5048",
-                  }}
-                >
-                  {place}
-                </span>
-                {i < ROUTE_WAYPOINTS.length - 1 && (
-                  <span style={{ color: "#2a2520" }}>→</span>
-                )}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Timeline ── */}
-      <main className="max-w-4xl mx-auto px-3 sm:px-6 md:px-12 py-8 md:py-16">
-        <div className="relative" style={{ paddingLeft: "26px" }}>
-          {/* Vertical line */}
-          <div
-            className="absolute top-4 bottom-4"
+            className="absolute inset-0"
             style={{
-              left: "6px",
-              width: "1px",
-              backgroundColor: "#1e1c18",
+              background:
+                "linear-gradient(to bottom, rgba(14,13,11,0.25) 0%, rgba(14,13,11,0.55) 40%, rgba(14,13,11,0.92) 75%, rgba(14,13,11,1) 100%)",
             }}
           />
 
-          {DAYS.map((day) => (
-            <div key={day.day} className="relative mb-2.5">
-              {/* Timeline node */}
-              <div
-                className="absolute rounded-full"
-                style={{
-                  left: "-20px",
-                  top: "26px",
-                  width: "13px",
-                  height: "13px",
-                  border: `2px solid ${TAG_COLOR[day.tag]}`,
-                  backgroundColor: "#0e0d0b",
-                  zIndex: 1,
-                }}
-              />
-              <DayCard data={day} />
-            </div>
-          ))}
-        </div>
-      </main>
-
-      {/* ── Footer ── */}
-      <footer
-        className="mt-4"
-        style={{
-          borderTop: "1px solid #1a1816",
-          backgroundColor: "#080807",
-        }}
-      >
-        <div className="max-w-4xl mx-auto px-5 md:px-12 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div>
-            <div
-              className="font-mono text-[10px] tracking-[0.2em] uppercase mb-1.5"
-              style={{ color: "#3a3530" }}
+          <div
+            className="relative z-10 w-full px-6 flex flex-col justify-end pb-8 h-full"
+            style={{ minHeight: "320px" }}
+          >
+            {/* Title */}
+            <h1
+              className="font-bold leading-[0.9] mb-2 mt-auto"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(32px, 8vw, 64px)",
+                color: "#f0e8d8",
+              }}
             >
-              行程备注
-            </div>
+              青甘大环线
+            </h1>
             <p
-              className="text-sm leading-relaxed"
-              style={{ color: "#4a4540", fontFamily: "var(--font-sans)" }}
+              className="font-light mb-6"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontStyle: "italic",
+                fontSize: "18px",
+                color: "#b8a880",
+              }}
             >
-              顺时针大环线，完美错峰国庆车流。全程高原路段，建议充分准备应对高反，备足现金，保持燃油充盈。
+              Qinghai-Gansu Grand Loop
             </p>
           </div>
-          <div
-            className="shrink-0 font-mono"
-            style={{ fontSize: "11px", color: "#2a2520" }}
-          >
-            ZONTES CU625 · 2025
+        </header>
+
+        <div className="px-6 py-6 bg-[#141210]">
+          <h3 className="text-sm font-semibold mb-3 text-[#c8963e]">车辆轨迹数据 (Chigee)</h3>
+          <Uploader onDataParsed={setTrack} />
+          
+          <div className="mt-6 pt-6 border-t border-[#2a2520]">
+            <h3 className="text-sm font-semibold mb-3 text-[#4a9fa5]">实时位置追踪 (OwnTracks)</h3>
+            <div className="flex gap-2">
+              {mqttStatus === "disconnected" ? (
+                <button
+                  onClick={connectMqtt}
+                  className="flex-1 bg-[#4a9fa5] text-[#0e0d0b] px-4 py-2.5 rounded text-sm font-medium hover:bg-[#3d8388] transition-colors"
+                >
+                  一键连接真实坐标
+                </button>
+              ) : (
+                <button
+                  onClick={disconnectMqtt}
+                  className="flex-1 bg-[#ff4a4a] text-white px-4 py-2.5 rounded text-sm font-medium hover:bg-[#cc3b3b] transition-colors"
+                >
+                  {mqttStatus === "connecting" ? "连接中..." : "断开连接"}
+                </button>
+              )}
+            </div>
+            {mqttStatus === "connected" && (
+              <p className="text-xs text-[#7ab87a] mt-2">已成功连接至服务器 (47.100.188.4)，等待接收车辆坐标...</p>
+            )}
+          </div>
+          
+          <div className="mt-4 flex gap-3">
+            <button
+              onClick={startSimulation}
+              disabled={isSimulating}
+              className="flex items-center justify-center gap-2 flex-1 py-2.5 rounded text-sm font-medium transition-colors"
+              style={{ 
+                backgroundColor: isSimulating ? "#2a2520" : "#c8963e",
+                color: isSimulating ? "#5a5048" : "#141210",
+                cursor: isSimulating ? "not-allowed" : "pointer"
+              }}
+            >
+              <Play className="w-4 h-4" />
+              {isSimulating ? "模拟行驶中..." : "开启本地路径模拟"}
+            </button>
           </div>
         </div>
-      </footer>
+
+        {/* Timeline */}
+        <main className="px-6 py-8 flex-1">
+          <div className="relative" style={{ paddingLeft: "26px" }}>
+            <div
+              className="absolute top-4 bottom-4"
+              style={{ left: "6px", width: "1px", backgroundColor: "#1e1c18" }}
+            />
+            {DAYS.map((day) => (
+              <div key={day.day} className="relative mb-2.5">
+                <div
+                  className="absolute rounded-full"
+                  style={{
+                    left: "-20px",
+                    top: "26px",
+                    width: "13px",
+                    height: "13px",
+                    border: `2px solid ${TAG_COLOR[day.tag]}`,
+                    backgroundColor: "#0e0d0b",
+                    zIndex: 1,
+                  }}
+                />
+                <DayCard data={day} onLocate={(lat, lng) => setCurrentLocation([lat, lng])} />
+              </div>
+            ))}
+          </div>
+        </main>
+      </div>
+
+      {/* ── Background Map Area ── */}
+      <div className="absolute inset-0 z-0">
+        <MapContainer track={track} currentLocation={currentLocation} waypoints={waypoints} />
+      </div>
+      
+      {/* Inject custom scrollbar style */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #0e0d0b;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #2a2520;
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #3a3530;
+        }
+      `}</style>
     </div>
   );
 }
