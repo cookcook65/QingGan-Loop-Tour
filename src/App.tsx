@@ -563,7 +563,7 @@ export default function App() {
   const [mqttStatus, setMqttStatus] = useState<"disconnected" | "connecting" | "connected">("disconnected");
   const [mqttClient, setMqttClient] = useState<mqtt.MqttClient | null>(null);
   
-  const MQTT_SERVER_IP = "47.100.188.4";
+  const MQTT_SERVER_DOMAIN = "tour.nestormao.com";
 
   // Mock waypoints coordinates for the map
   const waypoints = [
@@ -611,8 +611,8 @@ export default function App() {
 
   const connectMqtt = () => {
     setMqttStatus("connecting");
-    // Connect via WebSocket (port 9001)
-    const client = mqtt.connect(`ws://${MQTT_SERVER_IP}:9001`, {
+    // Connect via secure WebSocket (WSS) over standard port 443 with /mqtt path
+    const client = mqtt.connect(`wss://${MQTT_SERVER_DOMAIN}/mqtt`, {
       username: "Nestor", 
       password: "3545941mhk",
     });
@@ -637,7 +637,7 @@ export default function App() {
     client.on("error", (err) => {
       console.error("MQTT Error:", err);
       setMqttStatus("disconnected");
-      alert(`无法连接至 ${MQTT_SERVER_IP}:9001。请检查端口是否放行，或者密码是否正确！`);
+      alert(`无法连接至 ${MQTT_SERVER_DOMAIN}。请检查您的服务器 Nginx/SSL 配置是否生效！`);
       client.end();
     });
 
@@ -740,7 +740,7 @@ export default function App() {
               )}
             </div>
             {mqttStatus === "connected" && (
-              <p className="text-xs text-[#7ab87a] mt-2">已成功连接至服务器 (47.100.188.4)，等待接收车辆坐标...</p>
+              <p className="text-xs text-[#7ab87a] mt-2">已成功加密连接至服务器 (tour.nestormao.com)，等待接收车辆坐标...</p>
             )}
           </div>
           
