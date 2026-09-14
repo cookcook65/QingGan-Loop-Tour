@@ -206,13 +206,13 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
           const contentDiv = document.createElement('div');
           contentDiv.className = 'custom-photo-marker';
           // 使用 OSS 图片处理缩小缩略图体积
-          const thumbUrl = \`\${photo.url}?x-oss-process=image/resize,m_fill,w_100,h_100\`;
-          contentDiv.innerHTML = \`
+          const thumbUrl = `${photo.url}?x-oss-process=image/resize,m_fill,w_100,h_100`;
+          contentDiv.innerHTML = `
             <div style="background: #fff; padding: 3px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.2s;">
-              <div style="width: 48px; height: 48px; background-image: url('\${thumbUrl}'); background-size: cover; background-position: center; border-radius: 2px;"></div>
+              <div style="width: 48px; height: 48px; background-image: url('${thumbUrl}'); background-size: cover; background-position: center; border-radius: 2px;"></div>
             </div>
             <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #fff; margin: 0 auto;"></div>
-          \`;
+          `;
           
           contentDiv.onmouseenter = () => contentDiv.style.transform = 'scale(1.1)';
           contentDiv.onmouseleave = () => contentDiv.style.transform = 'scale(1)';
