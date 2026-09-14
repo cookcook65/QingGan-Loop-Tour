@@ -567,19 +567,19 @@ export default function App() {
 
   // Mock waypoints coordinates for the map
   const waypoints = [
-    { title: "西宁", subtitle: "起点/终点", lat: 36.6171, lng: 101.7782 },
-    { title: "青海湖", lat: 36.75, lng: 100.25 },
-    { title: "黑马河", lat: 36.72, lng: 99.78 },
-    { title: "茶卡盐湖", lat: 36.78, lng: 99.08 },
-    { title: "德令哈", lat: 37.37, lng: 97.37 },
-    { title: "大柴旦", lat: 37.85, lng: 95.36 },
-    { title: "水上雅丹", lat: 37.5, lng: 92.5 },
-    { title: "翡翠湖", lat: 37.75, lng: 95.5 },
-    { title: "敦煌", subtitle: "莫高窟、鸣沙山", lat: 40.14, lng: 94.66 },
-    { title: "嘉峪关", subtitle: "天下第一雄关", lat: 39.77, lng: 98.28 },
-    { title: "张掖", subtitle: "七彩丹霞", lat: 38.93, lng: 100.45 },
-    { title: "祁连", subtitle: "卓尔山", lat: 38.17, lng: 100.25 },
-    { title: "门源", subtitle: "达坂山", lat: 37.38, lng: 101.62 },
+    { title: "西宁", type: "city", subtitle: "起点/终点", lat: 36.6171, lng: 101.7782 },
+    { title: "青海湖", type: "spot", lat: 36.75, lng: 100.25 },
+    { title: "黑马河", type: "spot", lat: 36.72, lng: 99.78 },
+    { title: "茶卡盐湖", type: "spot", lat: 36.78, lng: 99.08 },
+    { title: "德令哈", type: "city", lat: 37.37, lng: 97.37 },
+    { title: "大柴旦", type: "city", lat: 37.85, lng: 95.36 },
+    { title: "水上雅丹", type: "spot", lat: 37.5, lng: 92.5 },
+    { title: "翡翠湖", type: "spot", lat: 37.75, lng: 95.5 },
+    { title: "敦煌", type: "city", subtitle: "莫高窟、鸣沙山", lat: 40.14, lng: 94.66 },
+    { title: "嘉峪关", type: "city", subtitle: "天下第一雄关", lat: 39.77, lng: 98.28 },
+    { title: "张掖", type: "city", subtitle: "七彩丹霞", lat: 38.93, lng: 100.45 },
+    { title: "祁连", type: "city", subtitle: "卓尔山", lat: 38.17, lng: 100.25 },
+    { title: "门源", type: "city", subtitle: "达坂山", lat: 37.38, lng: 101.62 },
   ];
 
   // Simulation logic
