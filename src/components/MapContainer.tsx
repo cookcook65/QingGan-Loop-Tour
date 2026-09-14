@@ -195,6 +195,8 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
 
   }, [map, AMap, currentLocation, track.length]);
 
+  const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
+
   // 获取并渲染照片图集
   useEffect(() => {
     fetch('https://mqtt.nestormao.com/api/photos')
@@ -205,11 +207,19 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
         data.forEach((photo: any) => {
           const contentDiv = document.createElement('div');
           contentDiv.className = 'custom-photo-marker';
-          // 使用 OSS 图片处理缩小缩略图体积
-          const thumbUrl = `${photo.url}?x-oss-process=image/resize,m_fill,w_100,h_100`;
+          
+          // 判断是否为视频
+          const isVideo = photo.url.match(/\.(mp4|mov|webm|qt)$/i);
+          
+          // 使用 OSS 图片处理缩小缩略图体积 (视频缩略图需要开通视频截帧，暂用一个默认播放图标或强制图片处理)
+          const thumbUrl = isVideo 
+            ? `${photo.url}?x-oss-process=video/snapshot,t_0,f_jpg,w_100,h_100` 
+            : `${photo.url}?x-oss-process=image/resize,m_fill,w_100,h_100`;
+
           contentDiv.innerHTML = `
-            <div style="background: #fff; padding: 3px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.2s;">
+            <div style="background: #fff; padding: 3px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.2s; position: relative;">
               <div style="width: 48px; height: 48px; background-image: url('${thumbUrl}'); background-size: cover; background-position: center; border-radius: 2px;"></div>
+              ${isVideo ? '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center;"><div style="width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 8px solid white; margin-left: 2px;"></div></div>' : ''}
             </div>
             <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #fff; margin: 0 auto;"></div>
           `;
@@ -225,8 +235,8 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
           });
 
           marker.on('click', () => {
-             // 点击打开大图或视频
-             window.open(photo.url, '_blank');
+             // 打开网页内置的相册模块
+             setSelectedPhoto(photo);
           });
 
           map.add(marker);
@@ -235,5 +245,67 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
       .catch(err => console.error("获取图集失败:", err));
   }, [map, AMap]);
 
-  return <div ref={mapRef} style={{ width: "100%", height: "100%" }} />;
+  return (
+    <>
+      <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
+      
+      {/* 相册弹窗模块 (防下载处理) */}
+      {selectedPhoto && (
+        <div 
+          style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)', zIndex: 9999,
+            display: 'flex', justifyContent: 'center', alignItems: 'center',
+            backdropFilter: 'blur(10px)'
+          }}
+          onClick={() => setSelectedPhoto(null)}
+        >
+          {/* 阻止右键菜单 */}
+          <div 
+            style={{ position: 'relative', maxWidth: '90%', maxHeight: '90%' }} 
+            onClick={(e) => e.stopPropagation()}
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            {/* 关闭按钮 */}
+            <button 
+              onClick={() => setSelectedPhoto(null)}
+              style={{
+                position: 'absolute', top: '-40px', right: 0, color: 'white',
+                background: 'none', border: 'none', fontSize: '28px', cursor: 'pointer'
+              }}
+            >
+              &times;
+            </button>
+            
+            {selectedPhoto.url.match(/\.(mp4|mov|webm|qt)$/i) ? (
+              <video 
+                src={selectedPhoto.url} 
+                controls 
+                autoPlay 
+                controlsList="nodownload" 
+                disablePictureInPicture
+                style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '8px', pointerEvents: 'auto' }}
+              />
+            ) : (
+              <div style={{ position: 'relative' }}>
+                <img 
+                  // 使用 OSS 处理大图，限制宽度1920并降低质量至85%以大幅节省流量
+                  src={`${selectedPhoto.url}?x-oss-process=image/resize,w_1920/quality,q_85`} 
+                  alt="Trip Memory" 
+                  style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '8px', userSelect: 'none', pointerEvents: 'none' }}
+                  draggable="false"
+                />
+                {/* 覆盖一层透明膜防止长按或拖拽保存 */}
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10 }}></div>
+              </div>
+            )}
+            
+            <div style={{ color: '#aaa', textAlign: 'center', marginTop: '12px', fontSize: '14px' }}>
+              拍摄于大环线 · {new Date(selectedPhoto.timestamp).toLocaleString()}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
