@@ -706,14 +706,18 @@ export default function App() {
       >
         {/* Mobile Swipe Handle (Visible only on mobile) */}
         <div 
-          className="w-full flex justify-center py-4 md:hidden shrink-0 sticky top-0 z-30 cursor-pointer" 
-          style={{ background: 'linear-gradient(to bottom, rgba(14,13,11,1) 30%, rgba(14,13,11,0) 100%)' }}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
+          className="w-full flex flex-col items-center justify-center pt-3 pb-2 md:hidden shrink-0 sticky top-0 z-30 cursor-pointer" 
+          style={{ 
+            background: 'linear-gradient(to bottom, rgba(14,13,11,1) 40%, rgba(14,13,11,0) 100%)',
+            touchAction: 'none' // 禁止 Safari 的原生拖拽，专心处理我们的抽屉逻辑
+          }}
+          onTouchStart={(e) => { e.stopPropagation(); onTouchStart(e); }}
+          onTouchMove={(e) => { e.stopPropagation(); onTouchMove(e); }}
+          onTouchEnd={(e) => { e.stopPropagation(); onTouchEnd(); }}
           onClick={() => setSheetState(s => s === 'collapsed' ? 'half' : s === 'half' ? 'full' : 'collapsed')}
         >
-          <div className="w-12 h-1.5 bg-white/30 rounded-full"></div>
+          <div className="w-12 h-1.5 bg-white/30 rounded-full mb-1"></div>
+          <span className="text-[9px] text-white/30 font-medium tracking-widest uppercase">Tap / Swipe</span>
         </div>
 
         {/* Hero (Hidden on collapsed state) */}
