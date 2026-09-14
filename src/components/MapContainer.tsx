@@ -195,7 +195,8 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
 
   }, [map, AMap, currentLocation, track.length]);
 
-  const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
+  // 存储相册组及当前查看的索引
+  const [albumData, setAlbumData] = useState<{ photos: any[], currentIndex: number } | null>(null);
 
   // 获取并渲染照片图集
   useEffect(() => {
@@ -204,20 +205,41 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
       .then(data => {
         if (!Array.isArray(data) || !map || !AMap) return;
         
+        // 按照经纬度（近似 500米范围）将照片聚合成组
+        const groups: { lat: number; lng: number; photos: any[] }[] = [];
         data.forEach((photo: any) => {
+          let added = false;
+          for (let g of groups) {
+            // 0.005 度大约相当于 500 米
+            if (Math.abs(g.lat - photo.lat) < 0.005 && Math.abs(g.lng - photo.lng) < 0.005) {
+              g.photos.push(photo);
+              added = true;
+              break;
+            }
+          }
+          if (!added) {
+            groups.push({ lat: photo.lat, lng: photo.lng, photos: [photo] });
+          }
+        });
+
+        groups.forEach((group: any) => {
           const contentDiv = document.createElement('div');
           contentDiv.className = 'custom-photo-marker';
           
-          // 判断是否为视频
-          const isVideo = photo.url.match(/\.(mp4|mov|webm|qt)$/i);
-          
-          // 使用 OSS 图片处理缩小缩略图体积 (视频缩略图需要开通视频截帧，暂用一个默认播放图标或强制图片处理)
+          const coverPhoto = group.photos[0];
+          const isVideo = coverPhoto.url.match(/\.(mp4|mov|webm|qt)$/i);
           const thumbUrl = isVideo 
-            ? `${photo.url}?x-oss-process=video/snapshot,t_0,f_jpg,w_100,h_100` 
-            : `${photo.url}?x-oss-process=image/resize,m_fill,w_100,h_100`;
+            ? `${coverPhoto.url}?x-oss-process=video/snapshot,t_0,f_jpg,w_100,h_100` 
+            : `${coverPhoto.url}?x-oss-process=image/resize,m_fill,w_100,h_100`;
+
+          // 如果该坐标有多张照片，显示右上角的角标
+          const badgeHtml = group.photos.length > 1 
+            ? `<div style="position: absolute; top: -8px; right: -8px; background: #e74c3c; color: white; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 10;">${group.photos.length}</div>` 
+            : '';
 
           contentDiv.innerHTML = `
             <div style="background: #fff; padding: 3px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.2s; position: relative;">
+              ${badgeHtml}
               <div style="width: 48px; height: 48px; background-image: url('${thumbUrl}'); background-size: cover; background-position: center; border-radius: 2px;"></div>
               ${isVideo ? '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center;"><div style="width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 8px solid white; margin-left: 2px;"></div></div>' : ''}
             </div>
@@ -228,15 +250,14 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
           contentDiv.onmouseleave = () => contentDiv.style.transform = 'scale(1)';
 
           const marker = new AMap.Marker({
-            position: new AMap.LngLat(photo.lng, photo.lat),
+            position: new AMap.LngLat(group.lng, group.lat),
             content: contentDiv,
             offset: new AMap.Pixel(-27, -60),
             zIndex: 80,
           });
 
           marker.on('click', () => {
-             // 打开网页内置的相册模块
-             setSelectedPhoto(photo);
+             setAlbumData({ photos: group.photos, currentIndex: 0 });
           });
 
           map.add(marker);
@@ -249,8 +270,8 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
     <>
       <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
       
-      {/* 相册弹窗模块 (防下载处理) */}
-      {selectedPhoto && (
+      {/* 相册弹窗模块 (支持多图切换和防下载) */}
+      {albumData && (
         <div 
           style={{
             position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
@@ -258,17 +279,27 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
             display: 'flex', justifyContent: 'center', alignItems: 'center',
             backdropFilter: 'blur(10px)'
           }}
-          onClick={() => setSelectedPhoto(null)}
+          onClick={() => setAlbumData(null)}
         >
+          {/* 左切换按钮 */}
+          {albumData.currentIndex > 0 && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); setAlbumData({ ...albumData, currentIndex: albumData.currentIndex - 1 }); }}
+              style={{ position: 'absolute', left: '20px', color: 'white', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '50px', height: '50px', fontSize: '24px', cursor: 'pointer', zIndex: 10001, backdropFilter: 'blur(4px)' }}
+            >
+              &#10094;
+            </button>
+          )}
+
           {/* 阻止右键菜单 */}
           <div 
-            style={{ position: 'relative', maxWidth: '90%', maxHeight: '90%' }} 
+            style={{ position: 'relative', maxWidth: '85%', maxHeight: '90%' }} 
             onClick={(e) => e.stopPropagation()}
             onContextMenu={(e) => e.preventDefault()}
           >
             {/* 关闭按钮 */}
             <button 
-              onClick={() => setSelectedPhoto(null)}
+              onClick={() => setAlbumData(null)}
               style={{
                 position: 'absolute', top: '-40px', right: 0, color: 'white',
                 background: 'none', border: 'none', fontSize: '28px', cursor: 'pointer'
@@ -277,33 +308,55 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
               &times;
             </button>
             
-            {selectedPhoto.url.match(/\.(mp4|mov|webm|qt)$/i) ? (
-              <video 
-                src={selectedPhoto.url} 
-                controls 
-                autoPlay 
-                controlsList="nodownload" 
-                disablePictureInPicture
-                style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '8px', pointerEvents: 'auto' }}
-              />
-            ) : (
-              <div style={{ position: 'relative' }}>
-                <img 
-                  // 使用 OSS 处理大图，限制宽度1920并降低质量至85%以大幅节省流量
-                  src={`${selectedPhoto.url}?x-oss-process=image/resize,w_1920/quality,q_85`} 
-                  alt="Trip Memory" 
-                  style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '8px', userSelect: 'none', pointerEvents: 'none' }}
-                  draggable="false"
-                />
-                {/* 覆盖一层透明膜防止长按或拖拽保存 */}
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10 }}></div>
-              </div>
-            )}
+            {(() => {
+              const currentPhoto = albumData.photos[albumData.currentIndex];
+              const isVideo = currentPhoto.url.match(/\.(mp4|mov|webm|qt)$/i);
+              
+              if (isVideo) {
+                return (
+                  <video 
+                    src={currentPhoto.url} 
+                    controls 
+                    autoPlay 
+                    controlsList="nodownload" 
+                    disablePictureInPicture
+                    style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '8px', pointerEvents: 'auto' }}
+                  />
+                );
+              } else {
+                return (
+                  <div style={{ position: 'relative' }}>
+                    <img 
+                      src={`${currentPhoto.url}?x-oss-process=image/resize,w_1920/quality,q_85`} 
+                      alt="Trip Memory" 
+                      style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '8px', userSelect: 'none', pointerEvents: 'none' }}
+                      draggable="false"
+                    />
+                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10 }}></div>
+                  </div>
+                );
+              }
+            })()}
             
-            <div style={{ color: '#aaa', textAlign: 'center', marginTop: '12px', fontSize: '14px' }}>
-              拍摄于大环线 · {new Date(selectedPhoto.timestamp).toLocaleString()}
+            <div style={{ color: '#aaa', textAlign: 'center', marginTop: '12px', fontSize: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>拍摄于大环线 · {new Date(albumData.photos[albumData.currentIndex].timestamp).toLocaleString()}</span>
+              {albumData.photos.length > 1 && (
+                <span style={{ background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '12px', color: '#fff' }}>
+                  {albumData.currentIndex + 1} / {albumData.photos.length}
+                </span>
+              )}
             </div>
           </div>
+
+          {/* 右切换按钮 */}
+          {albumData.currentIndex < albumData.photos.length - 1 && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); setAlbumData({ ...albumData, currentIndex: albumData.currentIndex + 1 }); }}
+              style={{ position: 'absolute', right: '20px', color: 'white', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '50px', height: '50px', fontSize: '24px', cursor: 'pointer', zIndex: 10001, backdropFilter: 'blur(4px)' }}
+            >
+              &#10095;
+            </button>
+          )}
         </div>
       )}
     </>
