@@ -652,6 +652,38 @@ export default function App() {
     setMqttStatus("disconnected");
   };
 
+  // Mobile Bottom Sheet State
+  const [sheetState, setSheetState] = useState<'collapsed' | 'half' | 'full'>('half');
+  const touchStartY = useRef(0);
+  const touchEndY = useRef(0);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.targetTouches[0].clientY;
+  };
+  
+  const onTouchMove = (e: React.TouchEvent) => {
+    touchEndY.current = e.targetTouches[0].clientY;
+  };
+
+  const onTouchEnd = () => {
+    const deltaY = touchStartY.current - touchEndY.current;
+    const SWIPE_THRESHOLD = 30; // px
+    if (deltaY > SWIPE_THRESHOLD) {
+      // swipe up
+      if (sheetState === 'collapsed') setSheetState('half');
+      else if (sheetState === 'half') setSheetState('full');
+    } else if (deltaY < -SWIPE_THRESHOLD) {
+      // swipe down
+      if (sheetState === 'full') setSheetState('half');
+      else if (sheetState === 'half') setSheetState('collapsed');
+    }
+  };
+
+  const sheetHeightClass = 
+    sheetState === 'collapsed' ? 'h-[12vh]' : 
+    sheetState === 'half' ? 'h-[40vh]' : 
+    'h-[90vh]';
+
   return (
     <div
       className="relative w-full h-screen overflow-hidden"
@@ -663,21 +695,31 @@ export default function App() {
     >
       {/* ── Left Sidebar (Timeline) / Bottom Sheet on Mobile ── */}
       <div 
-        className="absolute bottom-0 md:top-0 left-0 w-full md:w-[420px] lg:w-[460px] h-[40vh] md:h-screen overflow-y-auto custom-scrollbar flex flex-col z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-[20px_0_40px_rgba(0,0,0,0.5)] rounded-t-2xl md:rounded-none"
+        className={`absolute bottom-0 md:top-0 left-0 w-full md:w-[420px] lg:w-[460px] ${sheetHeightClass} md:h-screen overflow-y-auto custom-scrollbar flex flex-col z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-[20px_0_40px_rgba(0,0,0,0.5)] rounded-t-3xl md:rounded-none transition-all duration-300 ease-out`}
         style={{
-          backgroundColor: "rgba(14, 13, 11, 0.75)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          borderRight: "1px solid rgba(255, 255, 255, 0.05)"
+          backgroundColor: "rgba(14, 13, 11, 0.85)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderRight: "1px solid rgba(255, 255, 255, 0.05)",
+          borderTop: "1px solid rgba(255, 255, 255, 0.1)"
         }}
       >
         {/* Mobile Swipe Handle (Visible only on mobile) */}
-        <div className="w-full flex justify-center py-3 md:hidden shrink-0 sticky top-0 z-20" style={{ background: 'linear-gradient(to bottom, rgba(14,13,11,1) 0%, rgba(14,13,11,0) 100%)' }}>
-          <div className="w-12 h-1.5 bg-white/20 rounded-full"></div>
+        <div 
+          className="w-full flex justify-center py-4 md:hidden shrink-0 sticky top-0 z-30 cursor-pointer" 
+          style={{ background: 'linear-gradient(to bottom, rgba(14,13,11,1) 30%, rgba(14,13,11,0) 100%)' }}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          onClick={() => setSheetState(s => s === 'collapsed' ? 'half' : s === 'half' ? 'full' : 'collapsed')}
+        >
+          <div className="w-12 h-1.5 bg-white/30 rounded-full"></div>
         </div>
 
-        {/* Hero */}
-        <header className="relative shrink-0 overflow-hidden min-h-[240px] md:min-h-[320px]">
+        {/* Hero (Hidden on collapsed state) */}
+        <header 
+          className={`relative shrink-0 overflow-hidden min-h-[140px] md:min-h-[320px] transition-opacity duration-300 ${sheetState === 'collapsed' ? 'opacity-0 h-0 min-h-0 hidden' : 'opacity-100'}`}
+        >
           <img
             src="https://images.unsplash.com/photo-1751886797630-f1107c2cd1b8?w=1800&h=700&fit=crop&auto=format"
             alt="Motorcycles riding on a winding mountain highway"
@@ -721,11 +763,11 @@ export default function App() {
           </div>
         </header>
 
-        <div className="px-6 py-6 bg-[#141210]">
-          <h3 className="text-sm font-semibold mb-3 text-[#c8963e]">车辆轨迹数据 (Chigee)</h3>
-          <Uploader onDataParsed={setTrack} />
+        <div className={`px-6 py-6 bg-[#141210] ${sheetState === 'collapsed' ? 'hidden' : 'block'} md:block`}>
+          {/* <h3 className="text-sm font-semibold mb-3 text-[#c8963e]">车辆轨迹数据 (Chigee)</h3>
+          <Uploader onDataParsed={setTrack} /> */}
           
-          <div className="mt-6 pt-6 border-t border-[#2a2520]">
+          <div className="pt-2">
             <h3 className="text-sm font-semibold mb-3 text-[#4a9fa5]">实时位置追踪 (OwnTracks)</h3>
             <div className="flex gap-2">
               {mqttStatus === "disconnected" ? (
@@ -767,7 +809,12 @@ export default function App() {
         </div>
 
         {/* Timeline */}
-        <main className="px-6 py-8 flex-1">
+        <main className={`px-6 py-8 flex-1 transition-opacity duration-300 ${sheetState === 'collapsed' ? 'pt-4' : ''}`}>
+          {sheetState === 'collapsed' && (
+             <div className="text-[#c8963e] font-bold text-center text-sm mb-4 tracking-wider md:hidden">
+               青甘大环线 (上滑展开行程)
+             </div>
+          )}
           <div className="relative" style={{ paddingLeft: "26px" }}>
             <div
               className="absolute top-4 bottom-4"
