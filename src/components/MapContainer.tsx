@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import AMapLoader from "@amap/amap-jsapi-loader";
 
 interface MapViewProps {
@@ -271,7 +272,7 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
       <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
       
       {/* 相册弹窗模块 (支持多图切换和防下载) */}
-      {albumData && (
+      {albumData && createPortal(
         <div 
           style={{
             position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
@@ -357,7 +358,8 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
               &#10095;
             </button>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

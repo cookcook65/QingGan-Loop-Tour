@@ -661,9 +661,9 @@ export default function App() {
         fontFamily: "var(--font-sans)",
       }}
     >
-      {/* ── Left Sidebar (Timeline) ── */}
+      {/* ── Left Sidebar (Timeline) / Bottom Sheet on Mobile ── */}
       <div 
-        className="absolute top-0 left-0 w-full md:w-[420px] lg:w-[460px] h-[50vh] md:h-screen overflow-y-auto custom-scrollbar flex flex-col z-10 shadow-[20px_0_40px_rgba(0,0,0,0.5)]"
+        className="absolute bottom-0 md:top-0 left-0 w-full md:w-[420px] lg:w-[460px] h-[40vh] md:h-screen overflow-y-auto custom-scrollbar flex flex-col z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-[20px_0_40px_rgba(0,0,0,0.5)] rounded-t-2xl md:rounded-none"
         style={{
           backgroundColor: "rgba(14, 13, 11, 0.75)",
           backdropFilter: "blur(16px)",
@@ -671,8 +671,13 @@ export default function App() {
           borderRight: "1px solid rgba(255, 255, 255, 0.05)"
         }}
       >
+        {/* Mobile Swipe Handle (Visible only on mobile) */}
+        <div className="w-full flex justify-center py-3 md:hidden shrink-0 sticky top-0 z-20" style={{ background: 'linear-gradient(to bottom, rgba(14,13,11,1) 0%, rgba(14,13,11,0) 100%)' }}>
+          <div className="w-12 h-1.5 bg-white/20 rounded-full"></div>
+        </div>
+
         {/* Hero */}
-        <header className="relative shrink-0 overflow-hidden" style={{ minHeight: "320px" }}>
+        <header className="relative shrink-0 overflow-hidden min-h-[240px] md:min-h-[320px]">
           <img
             src="https://images.unsplash.com/photo-1751886797630-f1107c2cd1b8?w=1800&h=700&fit=crop&auto=format"
             alt="Motorcycles riding on a winding mountain highway"
