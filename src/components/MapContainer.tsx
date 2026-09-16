@@ -231,7 +231,7 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
           const isVideo = coverPhoto.url.match(/\.(mp4|mov|webm|qt)$/i);
           const thumbUrl = isVideo 
             ? `${coverPhoto.url}?x-oss-process=video/snapshot,t_0,f_jpg,w_100,h_100` 
-            : `${coverPhoto.url}?x-oss-process=image/resize,m_fill,w_100,h_100`;
+            : `${coverPhoto.url}?x-oss-process=image/resize,m_fill,w_100,h_100/format,jpg`;
 
           // 如果该坐标有多张照片，显示右上角的角标
           const badgeHtml = group.photos.length > 1 
@@ -278,7 +278,8 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
             position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
             backgroundColor: 'rgba(0, 0, 0, 0.9)', zIndex: 9999,
             display: 'flex', justifyContent: 'center', alignItems: 'center',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)'
           }}
           onClick={() => setAlbumData(null)}
         >
@@ -286,7 +287,7 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
           {albumData.currentIndex > 0 && (
             <button 
               onClick={(e) => { e.stopPropagation(); setAlbumData({ ...albumData, currentIndex: albumData.currentIndex - 1 }); }}
-              style={{ position: 'absolute', left: '20px', color: 'white', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '50px', height: '50px', fontSize: '24px', cursor: 'pointer', zIndex: 10001, backdropFilter: 'blur(4px)' }}
+              style={{ position: 'absolute', left: '20px', color: 'white', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '50px', height: '50px', fontSize: '24px', cursor: 'pointer', zIndex: 10001, backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
             >
               &#10094;
             </button>
@@ -328,7 +329,7 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
                 return (
                   <div style={{ position: 'relative' }}>
                     <img 
-                      src={`${currentPhoto.url}?x-oss-process=image/resize,w_1920/quality,q_85`} 
+                      src={`${currentPhoto.url}?x-oss-process=image/resize,w_1920/quality,q_85/format,jpg`} 
                       alt="Trip Memory" 
                       style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '8px', userSelect: 'none', pointerEvents: 'none' }}
                       draggable="false"
@@ -353,7 +354,7 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
           {albumData.currentIndex < albumData.photos.length - 1 && (
             <button 
               onClick={(e) => { e.stopPropagation(); setAlbumData({ ...albumData, currentIndex: albumData.currentIndex + 1 }); }}
-              style={{ position: 'absolute', right: '20px', color: 'white', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '50px', height: '50px', fontSize: '24px', cursor: 'pointer', zIndex: 10001, backdropFilter: 'blur(4px)' }}
+              style={{ position: 'absolute', right: '20px', color: 'white', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '50px', height: '50px', fontSize: '24px', cursor: 'pointer', zIndex: 10001, backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
             >
               &#10095;
             </button>
