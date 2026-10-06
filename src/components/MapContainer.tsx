@@ -30,11 +30,17 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
     })
       .then((AMapObj) => {
         setAMap(AMapObj);
+        
+        // 创建真实卫星图层与标准矢量图层
+        const satelliteLayer = new AMapObj.TileLayer.Satellite();
+        const roadNetLayer = new AMapObj.TileLayer.RoadNet();
+        
         const mapInstance = new AMapObj.Map(mapRef.current, {
           zoom: 6,
           center: [100.25, 36.75], // lng, lat
-          mapStyle: "amap://styles/dark",
+          layers: [satelliteLayer, roadNetLayer], // 默认启用真实卫星航拍底图 + 路网
         });
+        
         setMap(mapInstance);
       })
       .catch((e) => {
@@ -267,9 +273,57 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
       .catch(err => console.error("获取图集失败:", err));
   }, [map, AMap]);
 
+  const [mapMode, setMapMode] = useState<"satellite" | "standard">("satellite");
+  const satelliteLayersRef = useRef<any[]>([]);
+
+  // 切换卫星底图 / 暗色矢量底图
+  const toggleMapMode = () => {
+    if (!map || !AMap) return;
+    const nextMode = mapMode === "satellite" ? "standard" : "satellite";
+    setMapMode(nextMode);
+
+    if (nextMode === "satellite") {
+      map.setMapStyle("amap://styles/normal");
+      if (satelliteLayersRef.current.length === 0) {
+        satelliteLayersRef.current = [new AMap.TileLayer.Satellite(), new AMap.TileLayer.RoadNet()];
+      }
+      map.setLayers(satelliteLayersRef.current);
+    } else {
+      map.setLayers([AMap.createDefaultLayer()]);
+      map.setMapStyle("amap://styles/dark");
+    }
+  };
+
   return (
     <>
       <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
+      
+      {/* 卫星图 / 矢量图 切换按钮 */}
+      <button
+        onClick={toggleMapMode}
+        style={{
+          position: "absolute",
+          top: "16px",
+          right: "16px",
+          zIndex: 100,
+          background: "rgba(20, 18, 16, 0.85)",
+          backdropFilter: "blur(8px)",
+          border: "1px solid rgba(200, 150, 62, 0.4)",
+          color: "#f0e8d8",
+          padding: "6px 12px",
+          borderRadius: "8px",
+          fontSize: "12px",
+          fontWeight: 600,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
+        }}
+      >
+        <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: mapMode === "satellite" ? "#7ab87a" : "#c8963e" }}></span>
+        <span>{mapMode === "satellite" ? "🛰️ 真实卫星航拍" : "🗺️ 暗黑科技地图"}</span>
+      </button>
       
       {/* 相册弹窗模块 (支持多图切换和防下载) */}
       {albumData && createPortal(
