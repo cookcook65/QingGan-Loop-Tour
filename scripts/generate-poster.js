@@ -316,16 +316,16 @@ async function main() {
     <!-- Subtle Vignette / Darkening overlay for aesthetics -->
     <rect x="${mapX}" y="${mapY}" width="${mapW}" height="${mapH}" fill="rgba(10, 12, 14, 0.15)" />
     
-    <!-- Route Polyline (Gold Glow on Satellite) -->
+    <!-- Route Polyline (Bright Lake Blue Cyan Glow on Satellite) -->
     <g id="trackGroup">
       <!-- Shadow on terrain -->
-      <path d="${svgPath}" fill="none" stroke="#000000" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
-      <!-- Outer Glow -->
-      <path d="${svgPath}" fill="none" stroke="#f59e0b" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" filter="url(#glow)"/>
-      <!-- Middle Bright Golden Stroke -->
-      <path d="${svgPath}" fill="none" stroke="#f5d485" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.95" filter="url(#softGlow)"/>
-      <!-- Core Solid Line -->
-      <path d="${svgPath}" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+      <path d="${svgPath}" fill="none" stroke="#000000" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+      <!-- Outer Cyan / Lake Blue Glow -->
+      <path d="${svgPath}" fill="none" stroke="#0284c7" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" opacity="0.45" filter="url(#glow)"/>
+      <!-- Middle Bright Lake Blue Stroke -->
+      <path d="${svgPath}" fill="none" stroke="#38bdf8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.95" filter="url(#softGlow)"/>
+      <!-- Core Vivid Cyan / White Line -->
+      <path d="${svgPath}" fill="none" stroke="#e0f2fe" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
     </g>
 
     <!-- Waypoints & Labels -->

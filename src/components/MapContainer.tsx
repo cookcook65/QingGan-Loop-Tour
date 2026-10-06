@@ -72,27 +72,47 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
       if (isCity) {
         contentDiv.className = 'custom-city-marker';
         contentDiv.innerHTML = `
-          <div style="background: rgba(20, 18, 16, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(200,150,62,0.5); border-radius: 8px; padding: 6px 10px; color: #f0e8d8; box-shadow: 0 4px 12px rgba(0,0,0,0.5); min-width: 80px; display: flex; flex-direction: column; align-items: center;">
-            <div style="font-size: 14px; font-weight: bold; color: #c8963e;">${wp.title}</div>
-            ${wp.subtitle ? `<div style="font-size: 10px; color: #9a8f82; margin-top: 2px;">${wp.subtitle}</div>` : ''}
-            <div class="weather-container" style="font-size: 10px; color: #7ab87a; margin-top: 4px; display: none;"></div>
+          <div class="city-badge" style="background: rgba(14, 20, 24, 0.88); backdrop-filter: blur(10px); border: 1.5px solid #38bdf8; border-radius: 8px; padding: 6px 12px; color: #f0e8d8; box-shadow: 0 4px 16px rgba(0,0,0,0.6), 0 0 10px rgba(56, 189, 248, 0.25); min-width: 80px; display: flex; flex-direction: column; align-items: center; transition: all 0.2s;">
+            <div style="font-size: 14px; font-weight: bold; color: #38bdf8; display: flex; align-items: center; gap: 4px;">
+              <span>${wp.title}</span>
+              <span class="weather-toggle-icon" style="font-size: 10px; color: #38bdf8; opacity: 0.8;">⛅</span>
+            </div>
+            ${wp.subtitle ? `<div style="font-size: 10px; color: #94a3b8; margin-top: 1px;">${wp.subtitle}</div>` : ''}
+            
+            <!-- 天气折叠容器：默认隐藏，点击城市标签展开/收起 -->
+            <div class="weather-container" style="display: none; font-size: 10px; color: #7dd3fc; margin-top: 6px; padding-top: 5px; border-top: 1px dashed rgba(56,189,248,0.3); width: 100%; text-align: center; line-height: 1.4;">
+              <span class="weather-loading" style="color: #94a3b8;">获取天气中...</span>
+            </div>
           </div>
-          <div style="width: 2px; height: 16px; background: #c8963e; margin: 0 auto;"></div>
-          <div style="width: 8px; height: 8px; background: #c8963e; border-radius: 50%; border: 2px solid #141210; margin: 0 auto;"></div>
+          <div style="width: 2px; height: 14px; background: #38bdf8; margin: 0 auto; box-shadow: 0 0 6px #38bdf8;"></div>
+          <div style="width: 8px; height: 8px; background: #38bdf8; border-radius: 50%; border: 2px solid #0e1418; margin: 0 auto; box-shadow: 0 0 8px #38bdf8;"></div>
         `;
 
-        // 异步获取天气
-        weather.getForecast(wp.title, (err: any, data: any) => {
-          if (!err && data && data.forecasts && data.forecasts.length > 0) {
-            const forecasts = data.forecasts.slice(0, 3);
-            let weatherHtml = forecasts.map((f: any) => 
-              `<div>${f.date.slice(5)}: ${f.dayWeather} ${f.nightTemp}°~${f.dayTemp}°</div>`
-            ).join('');
-            
-            const weatherContainer = contentDiv.querySelector('.weather-container') as HTMLElement;
-            if (weatherContainer) {
-              weatherContainer.innerHTML = weatherHtml;
-              weatherContainer.style.display = 'block';
+        // 绑定点击事件：点击展开/收起近3日天气
+        let weatherLoaded = false;
+        contentDiv.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const weatherContainer = contentDiv.querySelector('.weather-container') as HTMLElement;
+          if (!weatherContainer) return;
+
+          const isVisible = weatherContainer.style.display === 'block';
+          if (isVisible) {
+            weatherContainer.style.display = 'none';
+          } else {
+            weatherContainer.style.display = 'block';
+            if (!weatherLoaded) {
+              weather.getForecast(wp.title, (err: any, data: any) => {
+                if (!err && data && data.forecasts && data.forecasts.length > 0) {
+                  const forecasts = data.forecasts.slice(0, 3);
+                  const weatherHtml = forecasts.map((f: any) => 
+                    `<div style="margin: 2px 0;">${f.date.slice(5)}: ${f.dayWeather} ${f.nightTemp}°~${f.dayTemp}°</div>`
+                  ).join('');
+                  weatherContainer.innerHTML = weatherHtml;
+                  weatherLoaded = true;
+                } else {
+                  weatherContainer.innerHTML = '<span>暂无天气数据</span>';
+                }
+              });
             }
           }
         });
@@ -100,23 +120,24 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
         // 景点样式
         contentDiv.className = 'custom-spot-marker';
         contentDiv.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);">
-            <div style="width: 6px; height: 6px; background: #4a9fa5; border-radius: 50%; box-shadow: 0 0 6px #4a9fa5;"></div>
-            <div style="font-size: 11px; color: #d0c0b0;">${wp.title}</div>
+          <div style="display: flex; align-items: center; gap: 6px; background: rgba(10,18,24,0.75); padding: 3px 8px; border-radius: 12px; border: 1px solid rgba(56,189,248,0.3); backdrop-filter: blur(4px);">
+            <div style="width: 6px; height: 6px; background: #38bdf8; border-radius: 50%; box-shadow: 0 0 8px #38bdf8;"></div>
+            <div style="font-size: 11px; color: #e0f2fe;">${wp.title}</div>
           </div>
         `;
+
+        contentDiv.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const navUrl = `https://uri.amap.com/navigation?to=${wp.lng},${wp.lat},${wp.title}&mode=car&policy=1&src=QingGanLoop`;
+          window.open(navUrl, '_blank');
+        });
       }
 
       const marker = new AMap.Marker({
         position: new AMap.LngLat(wp.lng, wp.lat),
         content: contentDiv,
-        offset: isCity ? new AMap.Pixel(-40, -50) : new AMap.Pixel(-10, -10),
-        zIndex: isCity ? 100 : 50, // 城市层级更高
-      });
-      
-      marker.on('click', () => {
-        const navUrl = `https://uri.amap.com/navigation?to=${wp.lng},${wp.lat},${wp.title}&mode=car&policy=1&src=QingGanLoop`;
-        window.open(navUrl, '_blank');
+        offset: isCity ? new AMap.Pixel(-45, -55) : new AMap.Pixel(-10, -10),
+        zIndex: isCity ? 100 : 50,
       });
 
       map.add(marker);
@@ -134,12 +155,11 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
     // 绘制计划路线 (基于 waypoints)
     if (waypoints.length > 0) {
       const plannedPath = waypoints.map(wp => new AMap.LngLat(wp.lng, wp.lat));
-      // 闭环：终点回到起点
       plannedPath.push(plannedPath[0]);
 
       plannedRouteRef.current = new AMap.Polyline({
         path: plannedPath,
-        strokeColor: "#4a9fa5",
+        strokeColor: "#0284c7",
         strokeWeight: 2,
         strokeOpacity: track.length > 0 ? 0.25 : 0.6,
         strokeStyle: "dashed",
@@ -149,17 +169,17 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
       map.add(plannedRouteRef.current);
     }
 
-    // 绘制实际轨迹 (基于上传的 GPX)
+    // 绘制实际轨迹 (亮眼湖蓝色高亮轨迹)
     if (track.length > 0) {
       const path = track.map(t => new AMap.LngLat(t[1], t[0]));
       polylineRef.current = new AMap.Polyline({
         path,
-        strokeColor: "#c8963e",
-        strokeWeight: 4,
-        strokeOpacity: 0.9,
+        strokeColor: "#00d2ff", // 亮眼湖蓝色 (Cyan / Lake Blue)
+        strokeWeight: 4.5,
+        strokeOpacity: 0.95,
         lineJoin: 'round',
         lineCap: 'round',
-        zIndex: 50, // 确保在计划路线之上
+        zIndex: 50,
       });
       map.add(polylineRef.current);
       map.setFitView([polylineRef.current]);
