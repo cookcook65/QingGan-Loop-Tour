@@ -550,14 +550,33 @@ function DayCard({ data, onLocate }: { data: DayData, onLocate: (lat: number, ln
 
 import MapContainer from "./components/MapContainer";
 import Uploader from "./components/Uploader";
-import { Play } from "lucide-react";
+import { Play, Upload } from "lucide-react";
 
 import mqtt from "mqtt";
 
 export default function App() {
   const [track, setTrack] = useState<[number, number][]>([]);
+  const [dailyTracks, setDailyTracks] = useState<Record<string, [number, number][]>>({});
   const [currentLocation, setCurrentLocation] = useState<[number, number] | undefined>(undefined);
   const [isSimulating, setIsSimulating] = useState(false);
+  
+  // 自动加载预置的 8 天 Chigee 真实骑行轨迹
+  useEffect(() => {
+    fetch("./tracks.json")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load tracks.json");
+        return res.json();
+      })
+      .then((data) => {
+        if (data?.combined && data.combined.length > 0) {
+          setTrack(data.combined);
+        }
+        if (data?.daily) {
+          setDailyTracks(data.daily);
+        }
+      })
+      .catch((err) => console.error("Error loading tracks.json:", err));
+  }, []);
   
   // MQTT State
   const [mqttStatus, setMqttStatus] = useState<"disconnected" | "connecting" | "connected">("disconnected");
@@ -768,10 +787,59 @@ export default function App() {
         </header>
 
         <div className={`px-6 py-6 bg-[#141210] ${sheetState === 'collapsed' ? 'hidden' : 'block'} md:block`}>
-          {/* <h3 className="text-sm font-semibold mb-3 text-[#c8963e]">车辆轨迹数据 (Chigee)</h3>
-          <Uploader onDataParsed={setTrack} /> */}
+          {/* 车辆轨迹状态与导入入口 */}
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#2a2520]">
+            <div>
+              <div className="text-xs font-semibold text-[#c8963e] flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#c8963e] inline-block animate-pulse"></span>
+                <span>Chigee 实测轨迹</span>
+              </div>
+              <p className="text-[11px] text-[#8a8075] mt-0.5">
+                {track.length > 0 ? `已载入 8 天完整数据 · ${track.length.toLocaleString()} 个高精定位点` : "正在载入实测轨迹..."}
+              </p>
+            </div>
+            
+            {/* 轻量导入按钮：点击即可导入自定义 GPX */}
+            <label className="text-[11px] text-[#b8a880] hover:text-[#f0e8d8] bg-[#221f1c] hover:bg-[#2e2a25] px-2.5 py-1.5 rounded cursor-pointer flex items-center gap-1 transition-all border border-white/5 shrink-0">
+              <Upload className="w-3 h-3" />
+              <span>导入GPX</span>
+              <input 
+                type="file" 
+                accept=".gpx" 
+                className="hidden" 
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      const text = event.target?.result as string;
+                      if (text) {
+                        try {
+                          const regex = /<trkpt\s+lat="([\d.-]+)"\s+lon="([\d.-]+)"/g;
+                          let match;
+                          const points: [number, number][] = [];
+                          while ((match = regex.exec(text)) !== null) {
+                            points.push([parseFloat(match[1]), parseFloat(match[2])]);
+                          }
+                          if (points.length > 0) {
+                            setTrack(points);
+                            alert(`成功导入 ${points.length} 个新轨迹点！`);
+                          } else {
+                            alert("未在文件中找到有效的 GPX 轨迹点。");
+                          }
+                        } catch (err) {
+                          alert("解析 GPX 文件失败。");
+                        }
+                      }
+                    };
+                    reader.readAsText(file);
+                  }
+                }} 
+              />
+            </label>
+          </div>
           
-          <div className="pt-2">
+          <div className="pt-1">
             <h3 className="text-sm font-semibold mb-3 text-[#4a9fa5]">实时位置追踪 (OwnTracks)</h3>
             <div className="flex gap-2">
               {mqttStatus === "disconnected" ? (

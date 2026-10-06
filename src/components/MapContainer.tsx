@@ -134,10 +134,10 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
       plannedRouteRef.current = new AMap.Polyline({
         path: plannedPath,
         strokeColor: "#4a9fa5",
-        strokeWeight: 3,
-        strokeOpacity: 0.6,
+        strokeWeight: 2,
+        strokeOpacity: track.length > 0 ? 0.25 : 0.6,
         strokeStyle: "dashed",
-        strokeDasharray: [10, 10],
+        strokeDasharray: [8, 8],
         lineJoin: 'round',
       });
       map.add(plannedRouteRef.current);
@@ -149,8 +149,8 @@ export default function MapContainer({ track, currentLocation, waypoints }: MapV
       polylineRef.current = new AMap.Polyline({
         path,
         strokeColor: "#c8963e",
-        strokeWeight: 5,
-        strokeOpacity: 0.8,
+        strokeWeight: 4,
+        strokeOpacity: 0.9,
         lineJoin: 'round',
         lineCap: 'round',
         zIndex: 50, // 确保在计划路线之上
