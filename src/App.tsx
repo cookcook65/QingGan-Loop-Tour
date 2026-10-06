@@ -550,7 +550,7 @@ function DayCard({ data, onLocate }: { data: DayData, onLocate: (lat: number, ln
 
 import MapContainer from "./components/MapContainer";
 import Uploader from "./components/Uploader";
-import { Play, Upload } from "lucide-react";
+import { Play, Upload, Share2 } from "lucide-react";
 
 import mqtt from "mqtt";
 
@@ -863,7 +863,7 @@ export default function App() {
             )}
           </div>
           
-          <div className="mt-4 flex gap-3">
+          <div className="mt-4 flex gap-2">
             <button
               onClick={startSimulation}
               disabled={isSimulating}
@@ -877,6 +877,17 @@ export default function App() {
               <Play className="w-4 h-4" />
               {isSimulating ? "模拟行驶中..." : "开启本地路径模拟"}
             </button>
+            
+            <a
+              href="./poster.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded text-sm font-medium bg-[#221f1c] hover:bg-[#2e2a25] text-[#f0e8d8] border border-white/10 transition-colors"
+              title="生成并下载 9:16 高清路线分享战报海报"
+            >
+              <Share2 className="w-4 h-4 text-[#c8963e]" />
+              <span>战报海报</span>
+            </a>
           </div>
         </div>
 

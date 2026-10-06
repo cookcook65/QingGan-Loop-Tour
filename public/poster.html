@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>青甘大环线 · 专属分享海报</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0a0908;
+      color: #f0e8d8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .header-bar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #c8963e;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #a09485;
+    }
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    button {
+      background: #c8963e;
+      color: #0e0d0b;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    button:hover {
+      background: #dfaa4d;
+      transform: translateY(-1px);
+    }
+    button.secondary {
+      background: #2a2520;
+      color: #f0e8d8;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    button.secondary:hover {
+      background: #3a342c;
+    }
+    .poster-box {
+      width: 100%;
+      max-width: 540px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(200, 150, 62, 0.2);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #0e0d0b;
+    }
+    .poster-box img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div class="title">青甘大环线 · 专属分享战报</div>
+    <div class="subtitle">基于 Chigee 实测 GPX 全量 44,265 点数据高精绘制</div>
+    <div class="btn-group">
+      <button onclick="downloadPng()">保存高清图片 (PNG)</button>
+      <button class="secondary" onclick="downloadSvg()">下载矢量原图 (SVG)</button>
+    </div>
+  </div>
+
+  <div class="poster-box" id="posterWrapper">
+    <img id="posterImg" src="./tour-poster.svg" alt="青甘大环线分享海报" />
+  </div>
+
+  <script>
+    function downloadSvg() {
+      const a = document.createElement('a');
+      a.href = './tour-poster.svg';
+      a.download = '青甘大环线-骑行分享战报.svg';
+      a.click();
+    }
+
+    function downloadPng() {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = './tour-poster.svg';
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1080;
+        canvas.height = 1920;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, 1080, 1920);
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = '青甘大环线-骑行分享战报-1080P.png';
+        a.click();
+      };
+    }
+  </script>
+</body>
+</html>
